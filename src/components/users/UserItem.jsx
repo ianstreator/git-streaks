@@ -4,7 +4,7 @@ import { useContext } from "react";
 import GithubContext from "../../context/github/GithubContext";
 
 function UserItem({ user: { login, avatar_url } }) {
-  const { getUser } = useContext(GithubContext);
+  const { getUser, getUserRepos } = useContext(GithubContext);
 
   return (
     <div className="card shadow-md compact side bg-base-100">
@@ -21,7 +21,10 @@ function UserItem({ user: { login, avatar_url } }) {
           <Link
             className="text-base-content text-opacity-40"
             to={`/user/${login}`}
-            onClick={() => getUser(login)}
+            onClick={() => {
+              getUser(login);
+              getUserRepos(login);
+            }}
           >
             View Profile
           </Link>
