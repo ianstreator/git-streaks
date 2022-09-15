@@ -22,8 +22,14 @@ export const GithubProvider = ({ children }) => {
     });
 
     const res = await fetch(`${GITHUB_URL}/search/users?${params}`);
-    let { items } = await res.json();
-    dispatch({ type: "GET_USERS", payload: items });
+    console.log(res);
+    if (res.status === 404) {
+      return (window.location = "/notfound");
+    } else {
+      const { items } = await res.json();
+      console.log(items);
+      dispatch({ type: "GET_USERS", payload: items });
+    }
   };
 
   const getUser = async (login) => {
@@ -33,9 +39,8 @@ export const GithubProvider = ({ children }) => {
 
     if (res.status === 404) {
       return (window.location = "/notfound");
-    } else if (res.status === 200) {
-      let data = await res.json();
-
+    } else {
+      const data = await res.json();
       dispatch({ type: "GET_USER", payload: data });
     }
   };
