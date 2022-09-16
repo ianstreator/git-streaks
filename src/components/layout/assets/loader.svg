@@ -9,7 +9,7 @@
       enable-background="new 0 0 0 0"
       xml:space="preserve"
     >
-      <circle fill="#b3cfef" stroke="none" cx="16" cy="93" r="9">
+      <circle fill="#a6adba" stroke="none" cx="16" cy="93" r="9">
         <animate
           attributeName="opacity"
           dur="1s"
@@ -18,7 +18,7 @@
           begin="0.1"
         />
       </circle>
-      <circle fill="#b3cfef" stroke="none" cx="46" cy="93" r="9">
+      <circle fill="#a6adba" stroke="none" cx="46" cy="93" r="9">
         <animate
           attributeName="opacity"
           dur="1s"
@@ -27,7 +27,7 @@
           begin="0.2"
         />
       </circle>
-      <circle fill="#b3cfef" stroke="none" cx="76" cy="93" r="9">
+      <circle fill="#a6adba" stroke="none" cx="76" cy="93" r="9">
         <animate
           attributeName="opacity"
           dur="1s"
