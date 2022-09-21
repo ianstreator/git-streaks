@@ -16,27 +16,100 @@ export const GithubProvider = ({ children }) => {
 
   const searchUsers = async (text) => {
     setLoading();
-
     const params = new URLSearchParams({
       q: text,
     });
-    console.log(GITHUB_URL);
-    console.log(params);
-    console.log(`${GITHUB_URL}/search/users?${params}`);
     const res = await fetch(`${GITHUB_URL}/search/users?${params}`);
-    console.log(res);
     if (res.status === 404) {
       return (window.location = "/notfound");
     } else {
       const { items } = await res.json();
       console.log(items);
-      dispatch({ type: "GET_USERS", payload: items });
+
+      const api_res = await fetch(
+        "http://localhost:3000/api/index",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(items),
+        }
+      );
+      const data = await api_res.json();
+      console.log(data)
+
+      dispatch({ type: "GET_USERS", payload: data });
     }
   };
+  const getUserContributionData = async (login) => {
+    const url = "https://api.github.com/graphql";
 
+    const github_data = {
+      token: "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",
+      username: login,
+    };
+    const body = {
+      query: `
+      query MyQuery {
+        user(login: "${login}") {
+          contributionsCollection {
+            contributionCalendar {
+              weeks {
+                contributionDays {
+                  contributionCount
+                }
+              }
+              totalContributions
+            }
+          }
+        }
+      }
+    `,
+    };
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: "bearer " + github_data.token,
+    };
+    const options = {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify(body),
+    };
+
+    try {
+      const res = await fetch(url, options);
+      const { data } = await res.json();
+      const dailyContributionList = [];
+      const yearlyContributions =
+        data.user.contributionsCollection.contributionCalendar
+          .totalContributions;
+      const weeklyContributionList =
+        data.user.contributionsCollection.contributionCalendar.weeks;
+      //...condense nested object values into integer array
+      Object.values(weeklyContributionList).forEach((week) =>
+        week.contributionDays.forEach((day) =>
+          dailyContributionList.push(day.contributionCount)
+        )
+      );
+      let currentStreak = 0;
+      let bestStreak = 0;
+      for (let i = 0; i < dailyContributionList.length; i++) {
+        dailyContributionList[i - 1] > 0
+          ? currentStreak++
+          : (currentStreak = 0);
+        if (currentStreak > bestStreak) bestStreak = currentStreak;
+      }
+      const contributionData = {
+        currentStreak,
+        bestStreak,
+        yearlyContributions,
+      };
+      return contributionData;
+    } catch (error) {
+      console.log(error);
+    }
+  };
   const getUser = async (login) => {
     setLoading();
-
     const res = await fetch(`${GITHUB_URL}/users/${login}`);
 
     if (res.status === 404) {

@@ -12,7 +12,7 @@ function UserSearch() {
     e.preventDefault();
 
     if (text === "") {
-      setAlert("Please enter something", "error");
+      setAlert("Try searching a github account name", "error");
     } else {
       searchUsers(text);
       setText("");
