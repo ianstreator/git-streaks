@@ -27,7 +27,7 @@ export const GithubProvider = ({ children }) => {
       console.log(items);
 
       const api_res = await fetch(
-        "http://localhost:3000/api/index",
+        "https://git-streaks-api.vercel.app/api/index",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

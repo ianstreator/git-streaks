@@ -11,7 +11,6 @@ function User() {
   const { getUser, user, getUserRepos, repos, loading } =
     useContext(GithubContext);
   const params = useParams();
-
   
   useEffect(() => {
     getUser(params.login);
