@@ -10,7 +10,7 @@ function UserItem({ user }) {
   const { currentStreak, bestStreak, yearlyContributions } =
     userContributionData;
   return (
-    <Link className="text-base-content" to={`/user/${login}`}>
+    <Link className="text-base-content w-fit" to={`/user/${login}`}>
       <div className="card shadow-md compact side bg-zinc-700 opacity-40 hover:opacity-100 w-96">
         <div className="flex-row space-x-1 card-body">
           <div className="avatar">
@@ -23,7 +23,10 @@ function UserItem({ user }) {
             <h2 className="card-title ">{login}</h2>
 
             <div className=" flex justify-between bg-zinc-800 rounded bg-opacity-60 w-max">
-              <div className="bg-zinc-800 pr-2 p-1 m-1 flex rounded">
+              <div
+                className="bg-zinc-800 pr-2 p-1 m-1 flex rounded"
+                title="current streak"
+              >
                 <img
                   src={currentStreak > 0 ? current : sleep}
                   alt="current-icon"
@@ -32,7 +35,10 @@ function UserItem({ user }) {
                 />
                 <p className="text-2xl ml-1">{currentStreak}</p>
               </div>
-              <div className="bg-zinc-800 pr-2 p-1 m-1 flex rounded">
+              <div
+                className="bg-zinc-800 pr-2 p-1 m-1 flex rounded"
+                title="best streak"
+              >
                 <img
                   src={best}
                   alt="current-icon"
@@ -41,7 +47,10 @@ function UserItem({ user }) {
                 />
                 <p className="text-2xl ml-1">{bestStreak}</p>
               </div>
-              <div className="bg-zinc-800 pr-2 p-1 m-1 flex rounded">
+              <div
+                className="bg-zinc-800 pr-2 p-1 m-1 flex rounded"
+                title="yearly contributions"
+              >
                 <img
                   src={yearly}
                   alt="current-icon"

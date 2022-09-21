@@ -5,6 +5,11 @@ const GithubContext = createContext();
 
 const GITHUB_URL = process.env.REACT_APP_GITHUB_URL;
 
+const isdev = window.location.href.includes("localhost");
+const ENV_API_URL = isdev
+  ? process.env.REACT_APP_DEV_API_URL
+  : process.env.REACT_APP_PROD_API_URL;
+
 export const GithubProvider = ({ children }) => {
   const initialState = {
     users: [],
@@ -24,88 +29,15 @@ export const GithubProvider = ({ children }) => {
       return (window.location = "/notfound");
     } else {
       const { items } = await res.json();
-      console.log(items);
 
-      const api_res = await fetch(
-        "https://git-streaks-api-ianstreator.vercel.app/api/index",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(items),
-        }
-      );
+      const api_res = await fetch(`${ENV_API_URL}/api/index`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(items),
+      });
       const data = await api_res.json();
-      console.log(data)
 
       dispatch({ type: "GET_USERS", payload: data });
-    }
-  };
-  const getUserContributionData = async (login) => {
-    const url = "https://api.github.com/graphql";
-
-    const github_data = {
-      token: "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",
-      username: login,
-    };
-    const body = {
-      query: `
-      query MyQuery {
-        user(login: "${login}") {
-          contributionsCollection {
-            contributionCalendar {
-              weeks {
-                contributionDays {
-                  contributionCount
-                }
-              }
-              totalContributions
-            }
-          }
-        }
-      }
-    `,
-    };
-    const headers = {
-      "Content-Type": "application/json",
-      Authorization: "bearer " + github_data.token,
-    };
-    const options = {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify(body),
-    };
-
-    try {
-      const res = await fetch(url, options);
-      const { data } = await res.json();
-      const dailyContributionList = [];
-      const yearlyContributions =
-        data.user.contributionsCollection.contributionCalendar
-          .totalContributions;
-      const weeklyContributionList =
-        data.user.contributionsCollection.contributionCalendar.weeks;
-      //...condense nested object values into integer array
-      Object.values(weeklyContributionList).forEach((week) =>
-        week.contributionDays.forEach((day) =>
-          dailyContributionList.push(day.contributionCount)
-        )
-      );
-      let currentStreak = 0;
-      let bestStreak = 0;
-      for (let i = 0; i < dailyContributionList.length; i++) {
-        dailyContributionList[i - 1] > 0
-          ? currentStreak++
-          : (currentStreak = 0);
-        if (currentStreak > bestStreak) bestStreak = currentStreak;
-      }
-      const contributionData = {
-        currentStreak,
-        bestStreak,
-        yearlyContributions,
-      };
-      return contributionData;
-    } catch (error) {
-      console.log(error);
     }
   };
   const getUser = async (login) => {
