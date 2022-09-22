@@ -33,7 +33,7 @@ export const GithubProvider = ({ children }) => {
   }, []);
 
   const searchUsers = async (text) => {
-    setLoading();
+    setLoading(true);
     const params = new URLSearchParams({
       q: text,
     });
@@ -44,6 +44,7 @@ export const GithubProvider = ({ children }) => {
     const filterCurrentUsernames = items.filter((item) => {
       return !state.usernames.includes(item.login);
     });
+    if (filterCurrentUsernames.length === 0) return setLoading(false);
 
     const api_res = await fetch(`${ENV_API_URL}/api/index`, {
       method: "POST",
@@ -73,7 +74,7 @@ export const GithubProvider = ({ children }) => {
   };
 
   const getUser = async (login) => {
-    setLoading();
+    setLoading(true);
     const res = await fetch(`${GITHUB_URL}/users/${login}`);
 
     if (res.status === 404) {
@@ -85,7 +86,7 @@ export const GithubProvider = ({ children }) => {
   };
 
   const getUserRepos = async (login) => {
-    setLoading();
+    setLoading(true);
 
     const params = new URLSearchParams({
       sort: "created",
@@ -101,8 +102,8 @@ export const GithubProvider = ({ children }) => {
     dispatch({ type: "CLEAR_USERS", payload: [] });
   };
 
-  const setLoading = () => {
-    dispatch({ type: "SET_LOADING" });
+  const setLoading = (data) => {
+    dispatch({ type: "SET_LOADING", payload: data });
   };
 
   const updateUserLocalStorage = (name, user) => {
