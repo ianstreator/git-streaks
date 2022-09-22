@@ -10,13 +10,6 @@ import { useEffect } from "react";
 function User() {
   const { getUser, user, getUserRepos, repos, loading } =
     useContext(GithubContext);
-  const params = useParams();
-  
-  useEffect(() => {
-    getUser(params.login);
-    getUserRepos(params.login);
-  }, []);
-
   const {
     name,
     type,
@@ -32,6 +25,17 @@ function User() {
     hireable,
     blog,
   } = user;
+  const params = useParams();
+
+  useEffect(() => {
+    getUser(params.login);
+    getUserRepos(params.login);
+    setTimeout(() => {
+      const { userData } = window.localStorage.getItem(params.login);
+      console.log(userData);
+    }, 2000);
+  }, []);
+
   const iconStyle = { color: "orange" };
 
   if (loading) return <Loader />;

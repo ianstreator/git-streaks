@@ -1,4 +1,4 @@
-import { createContext, useReducer } from "react";
+import { createContext, useEffect, useReducer } from "react";
 import githubReducer from "./GithubReducer";
 
 const GithubContext = createContext();
@@ -17,7 +17,19 @@ export const GithubProvider = ({ children }) => {
     repos: [],
     loading: false,
   };
+
   const [state, dispatch] = useReducer(githubReducer, initialState);
+
+  useEffect(() => {
+    const localStorageKeys = Object.keys(localStorage);
+    const savedUsers = [];
+
+    for (let i = 0; i < localStorageKeys.length; i++) {
+      const userData = JSON.parse(localStorage.getItem(localStorageKeys[i]));
+      savedUsers.push(userData);
+    }
+    dispatch({ type: "GET_USERS", payload: savedUsers });
+  }, []);
 
   const searchUsers = async (text) => {
     setLoading();
@@ -40,6 +52,7 @@ export const GithubProvider = ({ children }) => {
       dispatch({ type: "GET_USERS", payload: data });
     }
   };
+
   const getUser = async (login) => {
     setLoading();
     const res = await fetch(`${GITHUB_URL}/users/${login}`);
@@ -65,6 +78,17 @@ export const GithubProvider = ({ children }) => {
     dispatch({ type: "GET_REPOS", payload: data });
   };
 
+  const updateUserLocalStorage = (name, user) => {
+    if (localStorage.getItem(`${name}`)) {
+      localStorage.removeItem(name);
+    } else {
+      const local_storage_save_time = Date.now();
+      const watchlist = true;
+      const localUser = { ...user, local_storage_save_time, watchlist };
+      localStorage.setItem(name, JSON.stringify(localUser));
+    }
+  };
+
   const clearUsers = () => {
     dispatch({ type: "CLEAR_USERS", payload: [] });
   };
@@ -81,6 +105,7 @@ export const GithubProvider = ({ children }) => {
         getUser,
         getUserRepos,
         clearUsers,
+        updateUserLocalStorage,
       }}
     >
       {children}
