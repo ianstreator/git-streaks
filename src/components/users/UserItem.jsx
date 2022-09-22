@@ -7,7 +7,7 @@ import current from "../layout/assets/current-streak-icon.svg";
 import watching from "../layout/assets/watching-coder.svg";
 import not_watching from "../layout/assets/not-watching-coder.svg";
 
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import GithubContext from "../../context/github/GithubContext";
 
 function UserItem({ user }) {
@@ -15,6 +15,9 @@ function UserItem({ user }) {
   const { login, avatar_url, userContributionData, watchlist } = user;
   const { currentStreak, bestStreak, yearlyContributions } =
     userContributionData;
+
+  const [watchChange, setWatchChange] = useState(watchlist);
+
   return (
     <div className="card shadow-md compact side bg-zinc-700 opacity-40 hover:opacity-100 w-96">
       <div className="flex-row space-x-1 card-body">
@@ -27,16 +30,26 @@ function UserItem({ user }) {
         <div>
           <div className="flex">
             <Link className="text-base-content w-fit" to={`/user/${login}`}>
-              <h2 className="card-title opacity-50 hover:opacity-100 transition" title="view profile">{login}</h2>
+              <h2
+                className="card-title opacity-50 hover:opacity-100 transition"
+                title="view profile"
+              >
+                {login}
+              </h2>
             </Link>
 
             <img
-              src={watchlist ? watching : not_watching}
+              src={watchChange ? watching : not_watching}
               alt="eyes"
-              title={watchlist ? "remove from watch list" : "add to watch list"}
+              title={
+                watchChange ? "remove from watch list" : "add to watch list"
+              }
               width={20}
               className={`mx-1 ml-auto cursor-pointer`}
-              onClick={() => updateUserLocalStorage(login, user)}
+              onClick={() => {
+                updateUserLocalStorage(login, user);
+                setWatchChange(!watchChange);
+              }}
             />
           </div>
 
