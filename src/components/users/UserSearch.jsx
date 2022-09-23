@@ -14,6 +14,7 @@ function UserSearch() {
     if (text === "") {
       setAlert("Try searching a github account name", "error");
     } else {
+      clearUsers();
       searchUsers(text);
       setText("");
     }

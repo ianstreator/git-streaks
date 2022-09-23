@@ -3,21 +3,16 @@ const githubReducer = (state, action) => {
     case "SET_USERS":
       return {
         ...state,
-        users: [...action.payload],
+        users: action.payload,
         loading: false,
       };
-    case "SET_USERNAMES_ADD":
+    case "SET_WATCHLIST":
       return {
         ...state,
-        usernames: action.payload,
+        watchlist: { ...action.payload },
         loading: false,
       };
-    case "SET_USERNAMES_REMOVE":
-      return {
-        ...state,
-        usernames: action.payload,
-        loading: false,
-      };
+
     case "SET_USER":
       return {
         ...state,

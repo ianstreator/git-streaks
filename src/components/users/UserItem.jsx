@@ -7,17 +7,21 @@ import current from "../layout/assets/current-streak-icon.svg";
 import watching from "../layout/assets/watching-coder.svg";
 import not_watching from "../layout/assets/not-watching-coder.svg";
 
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import GithubContext from "../../context/github/GithubContext";
+import { useEffect } from "react";
 
 function UserItem({ user }) {
-  const { updateUserLocalStorage } = useContext(GithubContext);
-  const { login, avatar_url, userContributionData, watchlist } = user;
+  const { updateUserLocalStorage, watchlist } =
+    useContext(GithubContext);
+  const { login, avatar_url, userContributionData } = user;
   const { currentStreak, bestStreak, yearlyContributions } =
     userContributionData;
+  const [watchChange, setWatchChange] = useState(watchlist[login]);
 
-  const [watchChange, setWatchChange] = useState(watchlist);
-
+  useEffect(() => {
+    setWatchChange(watchlist[login]);
+  }, [watchlist]);
   return (
     <div className="card shadow-md compact side bg-zinc-700 opacity-40 hover:opacity-100 w-96">
       <div className="flex-row space-x-1 card-body">
@@ -47,8 +51,10 @@ function UserItem({ user }) {
               width={20}
               className={`mx-1 ml-auto cursor-pointer`}
               onClick={() => {
-                updateUserLocalStorage(login, user);
-                setWatchChange(!watchChange);
+                updateUserLocalStorage({
+                  user,
+                  action: watchlist[login] ? "delete" : "add",
+                });
               }}
             />
           </div>
