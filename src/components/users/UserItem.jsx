@@ -6,15 +6,15 @@ import best from "../layout/assets/best-streak-icon.svg";
 import current from "../layout/assets/current-streak-icon.svg";
 import watching from "../layout/assets/watching-coder.svg";
 import not_watching from "../layout/assets/not-watching-coder.svg";
+import refresh_icon from "../layout/assets/refresh.svg";
 
 import { useContext, useState } from "react";
 import GithubContext from "../../context/github/GithubContext";
 import { useEffect } from "react";
 
 function UserItem({ user }) {
-  const { updateUserLocalStorage, watchlist } =
-    useContext(GithubContext);
-  const { login, avatar_url, userContributionData } = user;
+  const { updateWatchlist, watchlist } = useContext(GithubContext);
+  const { login, avatar_url, userContributionData, refresh } = user;
   const { currentStreak, bestStreak, yearlyContributions } =
     userContributionData;
   const [watchChange, setWatchChange] = useState(watchlist[login]);
@@ -31,7 +31,7 @@ function UserItem({ user }) {
           </div>
         </div>
 
-        <div>
+        <div className="w-full">
           <div className="flex">
             <Link className="text-base-content w-fit" to={`/user/${login}`}>
               <h2
@@ -41,25 +41,41 @@ function UserItem({ user }) {
                 {login}
               </h2>
             </Link>
-
-            <img
-              src={watchChange ? watching : not_watching}
-              alt="eyes"
-              title={
-                watchChange ? "remove from watch list" : "add to watch list"
-              }
-              width={20}
-              className={`mx-1 ml-auto cursor-pointer`}
-              onClick={() => {
-                updateUserLocalStorage({
-                  user,
-                  action: watchlist[login] ? "delete" : "add",
-                });
-              }}
-            />
+            <div className="ml-auto flex">
+              {refresh && (
+                <img
+                  src={refresh_icon}
+                  alt="refresh"
+                  title="possible new data available"
+                  width={20}
+                  className={`mx-1 cursor-pointer`}
+                  onClick={() => {
+                    updateWatchlist({
+                      user,
+                      action: "update",
+                    });
+                  }}
+                />
+              )}
+              <img
+                src={watchChange ? watching : not_watching}
+                alt="eyes"
+                title={
+                  watchChange ? "remove from watch list" : "add to watch list"
+                }
+                width={23}
+                className={`mx-1  cursor-pointer`}
+                onClick={() => {
+                  updateWatchlist({
+                    user,
+                    action: watchlist[login] ? "delete" : "add",
+                  });
+                }}
+              />
+            </div>
           </div>
 
-          <div className=" flex justify-between bg-zinc-800 rounded bg-opacity-60 w-max">
+          <div className=" flex justify-between bg-zinc-800 rounded bg-opacity-60 w-full">
             <div
               className="bg-zinc-800 pr-2 p-1 m-1 flex rounded"
               title="current streak"
