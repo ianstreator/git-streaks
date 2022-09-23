@@ -30,10 +30,10 @@ function User() {
   useEffect(() => {
     getUser(params.login);
     getUserRepos(params.login);
-    setTimeout(() => {
-      const { userData } = window.localStorage.getItem(params.login);
-      console.log(userData);
-    }, 2000);
+    // setTimeout(() => {
+    //   const { userData } = window.localStorage.getItem(params.login);
+    //   console.log(userData);
+    // }, 2000);
   }, []);
 
   const iconStyle = { color: "orange" };
@@ -89,7 +89,7 @@ function User() {
                 <div className="stat">
                   <div className="stat-title text-md">Website</div>
                   <div className="text-lg stat-value">
-                    <a href={`${blog}`} target="_blank" rel="noreferrer">
+                    <a href={blog.includes("http") ? blog : `http://${blog}`} target="_blank" rel="noreferrer">
                       {blog}
                     </a>
                   </div>
