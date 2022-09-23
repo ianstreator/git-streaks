@@ -26,11 +26,6 @@ export const GithubProvider = ({ children }) => {
 
     for (let i = 0; i < localStorageKeys.length; i++) {
       let userData = JSON.parse(localStorage.getItem(localStorageKeys[i]));
-
-      const saveTime = new Date(userData.local_storage_save_time);
-      const currTime = new Date();
-      const notSameDay = saveTime.getUTCDate() !== currTime.getUTCDate();
-      if (notSameDay) userData = { ...userData, refresh: true };
       savedUsers[userData.login] = userData;
     }
 
@@ -121,7 +116,6 @@ export const GithubProvider = ({ children }) => {
       const localUser = {
         ...user,
         local_storage_save_time: Date.now(),
-        refresh: false,
       };
       localStorage.setItem(user.login, JSON.stringify(localUser));
       const addToWatchlist = {};
@@ -140,7 +134,6 @@ export const GithubProvider = ({ children }) => {
 
       updatedUser[user.login] = userObj;
       updatedUser[user.login].local_storage_save_time = currTime;
-      updatedUser[user.login].refresh = false;
 
       state.watchlist[user.login] = updatedUser[user.login];
       state.users[user.login] = updatedUser[user.login];

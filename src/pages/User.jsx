@@ -30,10 +30,6 @@ function User() {
   useEffect(() => {
     getUser(params.login);
     getUserRepos(params.login);
-    // setTimeout(() => {
-    //   const { userData } = window.localStorage.getItem(params.login);
-    //   console.log(userData);
-    // }, 2000);
   }, []);
 
   const iconStyle = { color: "orange" };

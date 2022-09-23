@@ -6,7 +6,6 @@ import best from "../layout/assets/best-streak-icon.svg";
 import current from "../layout/assets/current-streak-icon.svg";
 import watching from "../layout/assets/watching-coder.svg";
 import not_watching from "../layout/assets/not-watching-coder.svg";
-import refresh_icon from "../layout/assets/refresh.svg";
 
 import { useContext, useState } from "react";
 import GithubContext from "../../context/github/GithubContext";
@@ -14,14 +13,24 @@ import { useEffect } from "react";
 
 function UserItem({ user }) {
   const { updateWatchlist, watchlist } = useContext(GithubContext);
-  const { login, avatar_url, userContributionData, refresh } = user;
+  const { login, avatar_url, userContributionData } = user;
   const { currentStreak, bestStreak, yearlyContributions } =
     userContributionData;
   const [watchChange, setWatchChange] = useState(watchlist[login]);
 
   useEffect(() => {
+    if (user.local_storage_save_time) {
+      const saveTime = new Date(user.local_storage_save_time);
+      const currTime = new Date();
+      const notSameDay = saveTime.getUTCDate() !== currTime.getUTCDate();
+      if (notSameDay) updateWatchlist({ user, action: "update" });
+    }
+  }, []);
+
+  useEffect(() => {
     setWatchChange(watchlist[login]);
   }, [watchlist]);
+
   return (
     <div className="card shadow-md compact side bg-zinc-700 opacity-40 hover:opacity-100 w-96">
       <div className="flex-row space-x-1 card-body">
@@ -41,40 +50,22 @@ function UserItem({ user }) {
                 {login}
               </h2>
             </Link>
-            <div className="ml-auto flex">
-              {refresh && (
-                <img
-                  src={refresh_icon}
-                  alt="refresh"
-                  title="possible new data available"
-                  width={20}
-                  className={`mx-1 cursor-pointer`}
-                  onClick={() => {
-                    updateWatchlist({
-                      user,
-                      action: "update",
-                    });
-                  }}
-                />
-              )}
-              <img
-                src={watchChange ? watching : not_watching}
-                alt="eyes"
-                title={
-                  watchChange ? "remove from watch list" : "add to watch list"
-                }
-                width={23}
-                className={`mx-1  cursor-pointer`}
-                onClick={() => {
-                  updateWatchlist({
-                    user,
-                    action: watchlist[login] ? "delete" : "add",
-                  });
-                }}
-              />
-            </div>
+            <img
+              src={watchChange ? watching : not_watching}
+              alt="eyes"
+              width={23}
+              title={
+                watchChange ? "remove from watch list" : "add to watch list"
+              }
+              className={`mx-1 ml-auto cursor-pointer`}
+              onClick={() => {
+                updateWatchlist({
+                  user,
+                  action: watchlist[login] ? "delete" : "add",
+                });
+              }}
+            />
           </div>
-
           <div className=" flex justify-between bg-zinc-800 rounded bg-opacity-60 w-full">
             <div
               className="bg-zinc-800 pr-2 p-1 m-1 flex rounded"
