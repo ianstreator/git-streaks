@@ -8,14 +8,16 @@ function UserSearch() {
 
   const [text, setText] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (text === "") {
-      setAlert("Try searching a github account name", "error");
+      setAlert("Try searching a Github account name", "error");
     } else {
       clearUsers();
-      searchUsers(text);
+      const userSearch = await searchUsers(text);
+      if (!userSearch)
+        setAlert("There were no results based on that search...", "error");
       setText("");
     }
   };
@@ -43,7 +45,7 @@ function UserSearch() {
           </div>
         </form>
       </div>
-      {users.length > 0 && (
+      {Object.keys(users).length > 0 && (
         <div className="">
           <button className="btn btn-ghost btn-lg" onClick={clearUsers}>
             Clear

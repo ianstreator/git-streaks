@@ -1,4 +1,4 @@
-import { createContext, useEffect, useReducer, useState } from "react";
+import { createContext, useEffect, useReducer } from "react";
 import githubReducer from "./GithubReducer";
 
 const GithubContext = createContext();
@@ -34,17 +34,16 @@ export const GithubProvider = ({ children }) => {
   }, []);
 
   const searchUsers = async (text) => {
-    setLoading(true);
-
     const params = new URLSearchParams({
       q: text,
     });
 
     const res = await fetch(`${GITHUB_URL}/search/users?${params}`);
-
-    if (res.status === 404) return (window.location = "/notfound");
-
     const { items } = await res.json();
+    if (!items.length) {
+      return undefined;
+    }
+    setLoading(true);
 
     const watchlistNames = Object.keys(state.watchlist);
     const filterCurrentUsernames = items.filter((item) => {
@@ -99,7 +98,7 @@ export const GithubProvider = ({ children }) => {
   };
 
   const clearUsers = () => {
-    dispatch({ type: "SET_USERS", payload: [] });
+    dispatch({ type: "SET_USERS", payload: { ...state.watchlist } });
   };
 
   const setLoading = (data) => {
@@ -129,11 +128,10 @@ export const GithubProvider = ({ children }) => {
       const newData = await getUsersContributionData([user]);
       const userObj = newData[0];
 
-      const currTime = new Date();
       const updatedUser = {};
 
       updatedUser[user.login] = userObj;
-      updatedUser[user.login].local_storage_save_time = currTime;
+      updatedUser[user.login].local_storage_save_time = Date.now();
 
       state.watchlist[user.login] = updatedUser[user.login];
       state.users[user.login] = updatedUser[user.login];
