@@ -19,15 +19,6 @@ function UserItem({ user }) {
   const [watchChange, setWatchChange] = useState(watchlist[login]);
 
   useEffect(() => {
-    if (user.local_storage_save_time) {
-      const saveTime = new Date(user.local_storage_save_time);
-      const currTime = new Date();
-      const notSameDay = saveTime.getUTCDate() !== currTime.getUTCDate();
-      if (notSameDay) updateWatchlist({ user, action: "update" });
-    }
-  }, []);
-
-  useEffect(() => {
     setWatchChange(watchlist[login]);
   }, [watchlist]);
 

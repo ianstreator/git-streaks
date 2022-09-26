@@ -25,10 +25,17 @@ export const GithubProvider = ({ children }) => {
     const savedUsers = {};
 
     for (let i = 0; i < localStorageKeys.length; i++) {
+      if (localStorageKeys[i] === "ally-supports-cache") continue;
       let userData = JSON.parse(localStorage.getItem(localStorageKeys[i]));
-      savedUsers[userData.login] = userData;
+      const saveTime = new Date(userData.local_storage_save_time);
+      const currTime = new Date();
+      const notSameDay = saveTime.getUTCDate() !== currTime.getUTCDate();
+      if (notSameDay && typeof saveTime.getUTCDate() === "number") {
+        updateWatchlist({ user: userData, action: "update" });
+      } else {
+        savedUsers[userData.login] = userData;
+      }
     }
-
     dispatch({ type: "SET_WATCHLIST", payload: { ...savedUsers } });
     dispatch({ type: "SET_USERS", payload: { ...savedUsers } });
   }, []);
@@ -58,8 +65,9 @@ export const GithubProvider = ({ children }) => {
     });
     dispatch({
       type: "SET_USERS",
-      payload: { ...state.watchlist, ...restructuredData },
+      payload: { ...restructuredData, ...state.watchlist },
     });
+    return items.length;
   };
 
   const getUsersContributionData = async (users) => {
@@ -106,9 +114,10 @@ export const GithubProvider = ({ children }) => {
   };
 
   const updateWatchlist = async ({ user, action }) => {
+    const login = user.login;
     if (action === "delete") {
-      localStorage.removeItem(user.login);
-      delete state.watchlist[user.login];
+      localStorage.removeItem(login);
+      delete state.watchlist[login];
       dispatch({ type: "SET_WATCHLIST", payload: { ...state.watchlist } });
     }
     if (action === "add") {
@@ -116,25 +125,28 @@ export const GithubProvider = ({ children }) => {
         ...user,
         local_storage_save_time: Date.now(),
       };
-      localStorage.setItem(user.login, JSON.stringify(localUser));
+      localStorage.setItem(login, JSON.stringify(localUser));
       const addToWatchlist = {};
-      addToWatchlist[user.login] = localUser;
+      addToWatchlist[login] = localUser;
       dispatch({
         type: "SET_WATCHLIST",
         payload: { ...addToWatchlist, ...state.watchlist },
       });
     }
     if (action === "update") {
+      console.log(user);
       const newData = await getUsersContributionData([user]);
       const userObj = newData[0];
 
       const updatedUser = {};
 
-      updatedUser[user.login] = userObj;
-      updatedUser[user.login].local_storage_save_time = Date.now();
+      updatedUser[login] = userObj;
+      updatedUser[login].local_storage_save_time = Date.now();
 
-      state.watchlist[user.login] = updatedUser[user.login];
-      state.users[user.login] = updatedUser[user.login];
+      state.watchlist[login] = updatedUser[login];
+      state.users[login] = updatedUser[login];
+
+      localStorage.setItem(login, JSON.stringify(updatedUser[login]));
 
       dispatch({ type: "SET_USERS", payload: { ...state.users } });
       dispatch({ type: "SET_WATCHLIST", payload: { ...state.watchlist } });

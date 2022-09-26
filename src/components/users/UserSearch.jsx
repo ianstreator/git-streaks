@@ -4,7 +4,8 @@ import AlertContext from "../../context/alert/AlertContext";
 
 function UserSearch() {
   const { setAlert } = useContext(AlertContext);
-  const { users, searchUsers, clearUsers } = useContext(GithubContext);
+  const { users, searchUsers, clearUsers, watchlist } =
+    useContext(GithubContext);
 
   const [text, setText] = useState("");
 
@@ -15,15 +16,15 @@ function UserSearch() {
       setAlert("Try searching a Github account name", "error");
     } else {
       clearUsers();
-      const userSearch = await searchUsers(text);
-      if (!userSearch)
+      const searchRes = await searchUsers(text);
+      if (!searchRes)
         setAlert("There were no results based on that search...", "error");
       setText("");
     }
   };
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols2 lg:grid-cols2 md:grid-cols-2 mb-8 gap-8 ">
+    <div className="grid grid-cols-1 xl:grid-cols2 lg:grid-cols3 md:grid-cols-2 mb-8 gap-8 ">
       <div className="">
         <form onSubmit={handleSubmit}>
           <div className="form-control">
@@ -45,12 +46,10 @@ function UserSearch() {
           </div>
         </form>
       </div>
-      {Object.keys(users).length > 0 && (
-        <div className="">
-          <button className="btn btn-ghost btn-lg" onClick={clearUsers}>
-            Clear
-          </button>
-        </div>
+      {Object.keys(watchlist).length !== Object.keys(users).length && (
+        <button className="btn btn-ghost btn-lg" onClick={clearUsers}>
+          Clear
+        </button>
       )}
     </div>
   );
