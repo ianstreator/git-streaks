@@ -114,39 +114,43 @@ export const GithubProvider = ({ children }) => {
   };
 
   const updateWatchlist = async ({ user, action }) => {
-    const login = user.login;
+    const username = user.login;
+
     if (action === "delete") {
-      localStorage.removeItem(login);
-      delete state.watchlist[login];
+      localStorage.removeItem(username);
+
+      delete state.watchlist[username];
+
       dispatch({ type: "SET_WATCHLIST", payload: { ...state.watchlist } });
     }
+
     if (action === "add") {
-      const localUser = {
+      const newLocalStorageUser = {
         ...user,
         local_storage_save_time: Date.now(),
       };
-      localStorage.setItem(login, JSON.stringify(localUser));
-      const addToWatchlist = {};
-      addToWatchlist[login] = localUser;
+
+      localStorage.setItem(username, JSON.stringify(newLocalStorageUser));
+
+      const newWatchListUser = {};
+
+      newWatchListUser[username] = newLocalStorageUser;
+
       dispatch({
         type: "SET_WATCHLIST",
-        payload: { ...addToWatchlist, ...state.watchlist },
+        payload: { ...newWatchListUser, ...state.watchlist },
       });
     }
+
     if (action === "update") {
-      console.log(user);
-      const newData = await getUsersContributionData([user]);
-      const userObj = newData[0];
+      const updatedUserData = await getUsersContributionData(user);
 
-      const updatedUser = {};
+      updatedUserData.local_storage_save_time = Date.now();
 
-      updatedUser[login] = userObj;
-      updatedUser[login].local_storage_save_time = Date.now();
+      state.watchlist[username] = updatedUserData;
+      state.users[username] = updatedUserData;
 
-      state.watchlist[login] = updatedUser[login];
-      state.users[login] = updatedUser[login];
-
-      localStorage.setItem(login, JSON.stringify(updatedUser[login]));
+      localStorage.setItem(username, JSON.stringify(updatedUserData));
 
       dispatch({ type: "SET_USERS", payload: { ...state.users } });
       dispatch({ type: "SET_WATCHLIST", payload: { ...state.watchlist } });
