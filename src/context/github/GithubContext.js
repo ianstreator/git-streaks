@@ -36,8 +36,10 @@ export const GithubProvider = ({ children }) => {
         savedUsers[userData.login] = userData;
       }
     }
-    dispatch({ type: "SET_WATCHLIST", payload: { ...savedUsers } });
-    dispatch({ type: "SET_USERS", payload: { ...savedUsers } });
+    if (Object.keys(savedUsers).length) {
+      dispatch({ type: "SET_WATCHLIST", payload: { ...savedUsers } });
+      dispatch({ type: "SET_USERS", payload: { ...savedUsers } });
+    }
   }, []);
 
   const searchUsers = async (text) => {
