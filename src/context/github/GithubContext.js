@@ -29,7 +29,7 @@ export const GithubProvider = ({ children }) => {
       let userData = JSON.parse(localStorage.getItem(localStorageKeys[i]));
       const saveTime = new Date(userData.local_storage_save_time);
       const currTime = new Date();
-      const notSameDay = saveTime.getUTCDate() + 1 !== currTime.getUTCDate();
+      const notSameDay = saveTime.getUTCDate() !== currTime.getUTCDate();
       if (notSameDay && typeof saveTime.getUTCDate() === "number") {
         setLoading({ data: true, watchlist: true });
         updateWatchlist({ user: userData, action: "update" });
