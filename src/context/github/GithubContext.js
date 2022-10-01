@@ -29,8 +29,9 @@ export const GithubProvider = ({ children }) => {
       let userData = JSON.parse(localStorage.getItem(localStorageKeys[i]));
       const saveTime = new Date(userData.local_storage_save_time);
       const currTime = new Date();
-      const notSameDay = saveTime.getUTCDate() !== currTime.getUTCDate();
+      const notSameDay = saveTime.getUTCDate() + 1 !== currTime.getUTCDate();
       if (notSameDay && typeof saveTime.getUTCDate() === "number") {
+        setLoading({ data: true, watchlist: true });
         updateWatchlist({ user: userData, action: "update" });
       } else {
         savedUsers[userData.login] = userData;
@@ -52,13 +53,13 @@ export const GithubProvider = ({ children }) => {
     if (!items.length) {
       return undefined;
     }
-    setLoading(true);
+    setLoading({ data: true });
 
     const watchlistNames = Object.keys(state.watchlist);
     const filterCurrentUsernames = items.filter((item) => {
       return !watchlistNames.includes(item.login);
     });
-    if (filterCurrentUsernames.length === 0) return setLoading(false);
+    if (filterCurrentUsernames.length === 0) return setLoading({ data: false });
     const data = await getUsersContributionData(filterCurrentUsernames);
 
     const restructuredData = {};
@@ -83,7 +84,7 @@ export const GithubProvider = ({ children }) => {
   };
 
   const getUser = async (login) => {
-    setLoading(true);
+    setLoading({ data: true });
     const res = await fetch(`${GITHUB_URL}/users/${login}`);
 
     if (res.status === 404) {
@@ -95,7 +96,7 @@ export const GithubProvider = ({ children }) => {
   };
 
   const getUserRepos = async (login) => {
-    setLoading(true);
+    setLoading({ data: true });
 
     const params = new URLSearchParams({
       sort: "created",
@@ -111,8 +112,8 @@ export const GithubProvider = ({ children }) => {
     dispatch({ type: "SET_USERS", payload: { ...state.watchlist } });
   };
 
-  const setLoading = (data) => {
-    dispatch({ type: "SET_LOADING", payload: data });
+  const setLoading = ({ data, watchlist = false }) => {
+    dispatch({ type: "SET_LOADING", payload: { data, watchlist } });
   };
 
   const updateWatchlist = async ({ user, action }) => {

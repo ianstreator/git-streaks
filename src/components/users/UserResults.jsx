@@ -12,13 +12,19 @@ function UserResults() {
       })}
     </div>
   );
+
   if (!loading) {
     return <>{displayUsers}</>;
   } else {
     return (
       <>
         <div className="flex pb-8">
-          <h1 className="text-4xl md:text-6xl">Fetching users</h1>
+          {!loading.watchlist ? (
+            <h1 className="text-4xl md:text-6xl">Fetching users</h1>
+          ) : (
+            <h1 className="text-4xl md:text-6xl">Updating watch list</h1>
+          )}
+
           <Loader />
         </div>
         {displayUsers}
