@@ -66,6 +66,7 @@ export const GithubProvider = ({ children }) => {
     data.forEach((user) => {
       restructuredData[user.login] = user;
     });
+    console.log(restructuredData);
     dispatch({
       type: "SET_USERS",
       payload: { ...restructuredData, ...state.watchlist },
