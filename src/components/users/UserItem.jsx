@@ -12,7 +12,7 @@ import GithubContext from "../../context/github/GithubContext";
 import { useEffect } from "react";
 
 function UserItem({ user }) {
-  const { updateWatchlist, watchlist } = useContext(GithubContext);
+  const { updateWatchlist, watchlist, users } = useContext(GithubContext);
   const { login, avatar_url, userContributionData } = user;
   const { currentStreak, bestStreak, yearlyContributions } =
     userContributionData;
@@ -20,7 +20,7 @@ function UserItem({ user }) {
 
   useEffect(() => {
     setWatchChange(watchlist[login]);
-  }, [watchlist]);
+  }, [watchlist, users]);
 
   return (
     <div className="card shadow-md compact side bg-zinc-700 opacity-40 hover:opacity-100 w-96">

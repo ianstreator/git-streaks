@@ -13,7 +13,7 @@ function UserSearch() {
     e.preventDefault();
 
     if (text === "") {
-      setAlert("Try searching a Github account name", "error");
+      setAlert("Try searching a GitHub account name", "error");
     } else {
       clearUsers();
       const searchRes = await searchUsers(text);

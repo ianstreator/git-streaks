@@ -4,12 +4,13 @@ import UserItem from "./UserItem";
 import GithubContext from "../../context/github/GithubContext";
 
 function UserResults() {
-  const { users, loading } = useContext(GithubContext);
+  const { usersToDisplay, loading } = useContext(GithubContext);
+
   const displayUsers = (
     <div className="grid grid-cols-1 gap-14 xl:grid-cols-3 lg:grid-cols-3 md:grid-cols-2">
-      {Object.values(users).map((user) => {
-        return <UserItem key={user.login} user={user} />;
-      })}
+      {usersToDisplay.map((user, i) => (
+        <UserItem key={i} user={user} />
+      ))}
     </div>
   );
 
