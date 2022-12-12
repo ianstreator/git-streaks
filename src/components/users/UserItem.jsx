@@ -10,21 +10,35 @@ import not_watching from "../layout/assets/not-watching-coder.svg";
 import { useContext, useState } from "react";
 import GithubContext from "../../context/github/GithubContext";
 import { useEffect } from "react";
+import Loader from "../layout/Loader";
 
 function UserItem({ user }) {
   const { updateWatchlist, watchlist, users } = useContext(GithubContext);
-  const { login, avatar_url, userContributionData } = user;
+  const { login, avatar_url, userContributionData, updating } = user;
   const { currentStreak, bestStreak, yearlyContributions } =
     userContributionData;
   const [watchChange, setWatchChange] = useState(watchlist[login]);
+  console.log(updating, login);
 
+  const [streak, setStreak] = useState(currentStreak);
+  const [highestStreak, setHighestStreak] = useState(bestStreak);
+  const [annualContributions, setAnnualContributions] =
+    useState(yearlyContributions);
+
+  console.log(streak, highestStreak, annualContributions);
   useEffect(() => {
     setWatchChange(watchlist[login]);
   }, [watchlist, users]);
 
   return (
     <div className="card shadow-md compact side bg-zinc-700 opacity-40 hover:opacity-100 w-96">
-      <div className="flex-row space-x-1 card-body">
+      {updating && (
+        <div className="absolute py-11 px-20 text-6xl z-[100] w-full h-full text-xl bg-black/[0.6] text-white flex flex-row">
+          Updating
+          <Loader />
+        </div>
+      )}
+      <div className="relative flex-row space-x-1 card-body">
         <div className="avatar">
           <div className="rounded-full shadow w-20">
             <img src={avatar_url} alt="Profile" />
@@ -33,14 +47,17 @@ function UserItem({ user }) {
 
         <div className="w-full">
           <div className="flex">
-            <Link className="text-base-content w-fit" to={`/user/${login}`}>
-              <h2
-                className="card-title opacity-50 hover:opacity-100 transition"
-                title="view profile"
-              >
-                {login}
-              </h2>
-            </Link>
+            <div className="flex-col">
+              <Link className="text-base-content w-fit" to={`/user/${login}`}>
+                <h2
+                  className="card-title opacity-50 hover:opacity-100 transition"
+                  title="view profile"
+                >
+                  {login}
+                </h2>
+              </Link>
+            </div>
+
             <img
               src={watchChange ? watching : not_watching}
               alt="eyes"

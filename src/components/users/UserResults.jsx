@@ -4,11 +4,11 @@ import UserItem from "./UserItem";
 import GithubContext from "../../context/github/GithubContext";
 
 function UserResults() {
-  const { usersToDisplay, loading } = useContext(GithubContext);
-
+  const { users, loading } = useContext(GithubContext);
+  if (!users) return;
   const displayUsers = (
     <div className="grid grid-cols-1 gap-14 xl:grid-cols-3 lg:grid-cols-3 md:grid-cols-2">
-      {usersToDisplay.map((user, i) => (
+      {Object.values(users).map((user, i) => (
         <UserItem key={i} user={user} />
       ))}
     </div>
@@ -20,12 +20,7 @@ function UserResults() {
     return (
       <>
         <div className="flex pb-8">
-          {!loading.watchlist ? (
-            <h1 className="text-4xl md:text-6xl">Fetching users</h1>
-          ) : (
-            <h1 className="text-4xl md:text-6xl">Updating watch list</h1>
-          )}
-
+          <h1 className="text-4xl md:text-6xl">Fetching users</h1>
           <Loader />
         </div>
         {displayUsers}

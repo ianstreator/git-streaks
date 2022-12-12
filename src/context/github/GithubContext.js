@@ -22,33 +22,38 @@ export const GithubProvider = ({ children }) => {
   };
   const [state, dispatch] = useReducer(githubReducer, initialState);
 
-  const [usersToDisplay, setUsersToDisplay] = useState([]);
-
   useEffect(() => {
     if (!localStorage.getItem(watchListKey)) return;
     const parsedWatchList = JSON.parse(localStorage.getItem(watchListKey));
     const localStorageWatchList = Object.keys(parsedWatchList);
-    const savedUsers = {};
+
+    dispatch({ type: "SET_WATCHLIST", payload: { ...parsedWatchList } });
+    dispatch({ type: "SET_USERS", payload: { ...parsedWatchList } });
     for (let i = 0; i < localStorageWatchList.length; i++) {
       let userData = parsedWatchList[localStorageWatchList[i]];
       const saveTime = new Date(userData.local_storage_save_time);
       const currTime = new Date();
-      const notSameDay = saveTime.getUTCDate() !== currTime.getUTCDate();
+      const notSameDay = saveTime.getUTCDate() === currTime.getUTCDate();
+
       if (notSameDay && typeof saveTime.getUTCDate() === "number") {
-        setLoading({ data: true, watchlist: true });
+        dispatch({
+          type: "SET_USERS",
+          payload: {
+            ...parsedWatchList,
+            [localStorageWatchList[i]]: {
+              ...userData,
+              updating: true,
+            },
+          },
+        });
         updateWatchlist({ user: userData, action: "update" });
-      } else {
-        savedUsers[userData.login] = userData;
       }
-    }
-    if (Object.keys(savedUsers).length >= 1) {
-      dispatch({ type: "SET_WATCHLIST", payload: { ...savedUsers } });
-      dispatch({ type: "SET_USERS", payload: { ...savedUsers } });
-      setUsersToDisplay([...Object.values(parsedWatchList)]);
     }
   }, []);
 
   const searchUsers = async (text) => {
+    setLoading(true);
+
     const params = new URLSearchParams({
       q: text,
     });
@@ -56,9 +61,9 @@ export const GithubProvider = ({ children }) => {
     const res = await fetch(`${GITHUB_URL}/search/users?${params}`);
     const { items } = await res.json();
     if (!items.length) {
+      setLoading(false);
       return undefined;
     }
-    setLoading({ data: true });
 
     const filterCurrentUsernames = items.filter((item) => {
       return !state.watchlist[item.login];
@@ -70,11 +75,11 @@ export const GithubProvider = ({ children }) => {
     data.forEach((user) => {
       restructuredData[user.login] = user;
     });
-    setUsersToDisplay([...data, ...Object.values(state.watchlist)]);
     dispatch({
       type: "SET_USERS",
       payload: { ...state.watchlist, ...restructuredData },
     });
+    setLoading(false);
     return true;
   };
 
@@ -89,7 +94,7 @@ export const GithubProvider = ({ children }) => {
   };
 
   const getUser = async (login) => {
-    setLoading({ data: true });
+    setLoading(true);
     const res = await fetch(`${GITHUB_URL}/users/${login}`);
 
     if (res.status === 404) {
@@ -101,7 +106,7 @@ export const GithubProvider = ({ children }) => {
   };
 
   const getUserRepos = async (login) => {
-    setLoading({ data: true });
+    setLoading(true);
 
     const params = new URLSearchParams({
       sort: "created",
@@ -114,12 +119,11 @@ export const GithubProvider = ({ children }) => {
   };
 
   const clearUsers = () => {
-    setUsersToDisplay([...Object.values(state.watchlist)]);
     dispatch({ type: "SET_USERS", payload: { ...state.watchlist } });
   };
 
-  const setLoading = ({ data, watchlist = false }) => {
-    dispatch({ type: "SET_LOADING", payload: { data, watchlist } });
+  const setLoading = (data) => {
+    dispatch({ type: "SET_LOADING", payload: data });
   };
 
   const updateWatchlist = async ({ user, action }) => {
@@ -137,6 +141,7 @@ export const GithubProvider = ({ children }) => {
         [username]: {
           ...user,
           local_storage_save_time: Date.now(),
+          updating: false,
         },
       };
       const setLocalStorageWatchList = {
@@ -155,16 +160,22 @@ export const GithubProvider = ({ children }) => {
 
     if (action === "update") {
       const updatedUserData = await getUsersContributionData(user);
-
+      if (!updatedUserData.userContributionData) return;
       updatedUserData.local_storage_save_time = Date.now();
 
-      state.users[username] = updatedUserData;
       state.watchlist[username] = updatedUserData;
 
       localStorage.setItem(watchListKey, JSON.stringify(state.watchlist));
 
-      dispatch({ type: "SET_USERS", payload: { ...state.users } });
-      dispatch({ type: "SET_WATCHLIST", payload: { ...state.watchlist } });
+      dispatch({
+        type: "SET_WATCHLIST",
+        payload: { ...state.watchlist },
+      });
+      dispatch({
+        type: "SET_USERS",
+        payload: { ...state.watchlist },
+      });
+      updatedUserData.updating = false;
     }
   };
 
@@ -177,7 +188,6 @@ export const GithubProvider = ({ children }) => {
         getUserRepos,
         clearUsers,
         updateWatchlist,
-        usersToDisplay,
       }}
     >
       {children}
