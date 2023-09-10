@@ -33,7 +33,7 @@ export const GithubProvider = ({ children }) => {
       let userData = parsedWatchList[localStorageWatchList[i]];
       const saveTime = new Date(userData.local_storage_save_time);
       const currTime = new Date();
-      const notSameDay = saveTime.getUTCDate() === currTime.getUTCDate();
+      const notSameDay = saveTime.getUTCDate() !== currTime.getUTCDate();
 
       if (notSameDay && typeof saveTime.getUTCDate() === "number") {
         dispatch({
@@ -58,39 +58,57 @@ export const GithubProvider = ({ children }) => {
       q: text,
     });
 
+    const githubUsersObject = {};
     const res = await fetch(`${GITHUB_URL}/search/users?${params}`);
-    const { items } = await res.json();
-    if (!items.length) {
+    const { items: users } = await res.json();
+    users.forEach((user) => {
+      githubUsersObject[user.login] = user;
+    });
+
+    if (!users.length) {
       setLoading(false);
       return undefined;
     }
 
-    const filterCurrentUsernames = items.filter((item) => {
-      return !state.watchlist[item.login];
-    });
-    if (filterCurrentUsernames.length === 0) return setLoading({ data: false });
-    const data = await getUsersContributionData(filterCurrentUsernames);
+    const filterCurrentUsernames = users
+      .filter((user) => !state.watchlist[user.login])
+      .map((user) => user.login);
+    if (!filterCurrentUsernames.length) return setLoading({ data: false });
+    const contributionData = await getUsersContributionData(
+      filterCurrentUsernames
+    );
 
-    const restructuredData = {};
-    data.forEach((user) => {
-      restructuredData[user.login] = user;
+    Object.entries(contributionData).forEach(([user, data]) => {
+      githubUsersObject[user] = {
+        ...githubUsersObject[user],
+        userContributionData: data,
+      };
     });
+
     dispatch({
       type: "SET_USERS",
-      payload: { ...state.watchlist, ...restructuredData },
+      payload: { ...state.watchlist, ...githubUsersObject },
     });
     setLoading(false);
     return true;
   };
 
   const getUsersContributionData = async (users) => {
-    const api_res = await fetch(`${ENV_API_URL}/api/index`, {
+    const options = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(users),
-    });
-    const data = await api_res.json();
-    return data;
+    };
+    const res = await fetch(`${ENV_API_URL}/api/index`, options);
+
+    if (res.status === 200) {
+      const data = await res.json();
+      console.log(data);
+      return data;
+    } else {
+      console.log(await res.json());
+      console.log(res.status);
+    }
   };
 
   const getUser = async (login) => {

@@ -14,18 +14,14 @@ import Loader from "../layout/Loader";
 
 function UserItem({ user }) {
   const { updateWatchlist, watchlist, users } = useContext(GithubContext);
-  const { login, avatar_url, userContributionData, updating } = user;
-  const { currentStreak, bestStreak, yearlyContributions } =
-    userContributionData;
+  const {
+    login,
+    avatar_url,
+    userContributionData: { currentStreak, bestStreak, yearlyContributions },
+    updating,
+  } = user;
   const [watchChange, setWatchChange] = useState(watchlist[login]);
-  console.log(updating, login);
 
-  const [streak, setStreak] = useState(currentStreak);
-  const [highestStreak, setHighestStreak] = useState(bestStreak);
-  const [annualContributions, setAnnualContributions] =
-    useState(yearlyContributions);
-
-  console.log(streak, highestStreak, annualContributions);
   useEffect(() => {
     setWatchChange(watchlist[login]);
   }, [watchlist, users]);
@@ -33,7 +29,7 @@ function UserItem({ user }) {
   return (
     <div className="card shadow-md compact side bg-zinc-700 opacity-40 hover:opacity-100 w-96">
       {updating && (
-        <div className="absolute py-11 px-20 text-6xl z-[100] w-full h-full text-xl bg-black/[0.6] text-white flex flex-row">
+        <div className="absolute py-11 px-20 z-[100] w-full h-full text-xl bg-black/[0.6] text-white flex flex-row">
           Updating
           <Loader />
         </div>
