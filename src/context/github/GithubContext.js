@@ -5,7 +5,7 @@ const GithubContext = createContext();
 
 const GITHUB_URL = process.env.REACT_APP_GITHUB_URL;
 
-const watchListKey = "gitstreaks:watchlist";
+const watchListCookieKey = "watchlist";
 
 const isdev = window.location.href.includes("localhost");
 const ENV_API_URL = isdev
@@ -23,8 +23,10 @@ export const GithubProvider = ({ children }) => {
   const [state, dispatch] = useReducer(githubReducer, initialState);
 
   useEffect(() => {
-    if (!localStorage.getItem(watchListKey)) return;
-    const parsedWatchList = JSON.parse(localStorage.getItem(watchListKey));
+    if (!localStorage.getItem(watchListCookieKey)) return;
+    const parsedWatchList = JSON.parse(
+      localStorage.getItem(watchListCookieKey)
+    );
     const localStorageWatchList = Object.keys(parsedWatchList);
 
     dispatch({ type: "SET_WATCHLIST", payload: { ...parsedWatchList } });
@@ -145,7 +147,7 @@ export const GithubProvider = ({ children }) => {
     if (action === "delete") {
       delete state.watchlist[username];
       const localStorageWatchList = JSON.stringify({ ...state.watchlist });
-      localStorage.setItem(watchListKey, localStorageWatchList);
+      localStorage.setItem(watchListCookieKey, localStorageWatchList);
       dispatch({ type: "SET_WATCHLIST", payload: { ...state.watchlist } });
     }
 
@@ -162,7 +164,7 @@ export const GithubProvider = ({ children }) => {
         ...newWatchListUser,
       };
       localStorage.setItem(
-        watchListKey,
+        watchListCookieKey,
         JSON.stringify({ ...setLocalStorageWatchList })
       );
       dispatch({
@@ -174,12 +176,16 @@ export const GithubProvider = ({ children }) => {
     if (action === "update") {
       const updatedUserData = await getUsersContributionData(username);
       if (!updatedUserData.userContributionData) return;
+
       updatedUserData.local_storage_save_time = Date.now();
 
       state.watchlist[username] = updatedUserData;
 
-      localStorage.setItem(watchListKey, JSON.stringify(state.watchlist));
-
+      localStorage.setItem(watchListCookieKey, JSON.stringify(state.watchlist));
+      dispatch({
+        type: "SET_USER",
+        payload: { updating: false, userContributionData: updatedUserData },
+      });
       dispatch({
         type: "SET_WATCHLIST",
         payload: { ...state.watchlist },
@@ -188,7 +194,6 @@ export const GithubProvider = ({ children }) => {
         type: "SET_USERS",
         payload: { ...state.watchlist },
       });
-      updatedUserData.updating = false;
     }
   };
 
