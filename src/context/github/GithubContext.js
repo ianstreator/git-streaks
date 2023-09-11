@@ -23,7 +23,6 @@ export const GithubProvider = ({ children }) => {
   const [state, dispatch] = useReducer(githubReducer, initialState);
 
   useEffect(() => {
-    console.log(Date.now());
     if (!localStorage.getItem(watchListKey)) return;
     const parsedWatchList = JSON.parse(localStorage.getItem(watchListKey));
     const localStorageWatchList = Object.keys(parsedWatchList);
@@ -98,14 +97,12 @@ export const GithubProvider = ({ children }) => {
       body: JSON.stringify(users),
     };
     const res = await fetch(`${ENV_API_URL}/api/index`, options);
+    const data = await res.json();
 
     if (res.status === 200) {
-      const data = await res.json();
-      console.log(data);
       return data;
     } else {
-      console.log(await res.json());
-      console.log(res.status);
+      console.log(res.status, data);
     }
   };
 

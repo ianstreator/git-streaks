@@ -70,7 +70,7 @@ function UserItem({ user }) {
               }}
             />
           </div>
-          <div className=" flex justify-between bg-zinc-800 rounded bg-opacity-60 w-full">
+          <div className="flex justify-between bg-zinc-800 rounded bg-opacity-60 w-full">
             <div
               className="bg-zinc-800 pr-2 p-1 m-1 flex rounded"
               title="current streak"
