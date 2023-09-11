@@ -17,9 +17,9 @@ function App() {
     <GithubProvider>
       <AlertProvider>
         <Router>
-          <div className="flex flex-col justify-between h-screen">
+          <div className="flex flex-col justify-start h-screen">
             <Navbar />
-            <main className="container mx-auto px-1 pb-12">
+            <main className="container mx-auto px-1 pb-12 grow">
               <Alert />
               <Routes>
                 <Route path="/" element={<Home />} />

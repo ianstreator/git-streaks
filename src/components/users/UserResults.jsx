@@ -18,13 +18,13 @@ function UserResults() {
     return <>{displayUsers}</>;
   } else {
     return (
-      <>
+      <div className="grow h-screen">
         <div className="flex pb-8">
           <h1 className="text-4xl md:text-6xl">Fetching users</h1>
           <Loader />
         </div>
         {displayUsers}
-      </>
+      </div>
     );
   }
 }

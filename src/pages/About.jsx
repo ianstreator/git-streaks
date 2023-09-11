@@ -3,7 +3,7 @@ import React from "react";
 function About() {
   return (
     <div>
-      <h1 className="text-6xl mb-4">Git-Streaks</h1>
+      <h1 className="text-6xl mb-4">Git Streaks</h1>
       <p className="mb-4 text-2xl font-light">
         {
           "A React app to view GitHub account contribution data ( current-streak, best-streak, yearly contributions ), and further profile details."

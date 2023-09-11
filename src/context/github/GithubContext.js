@@ -23,6 +23,7 @@ export const GithubProvider = ({ children }) => {
   const [state, dispatch] = useReducer(githubReducer, initialState);
 
   useEffect(() => {
+    console.log(Date.now());
     if (!localStorage.getItem(watchListKey)) return;
     const parsedWatchList = JSON.parse(localStorage.getItem(watchListKey));
     const localStorageWatchList = Object.keys(parsedWatchList);
@@ -53,10 +54,7 @@ export const GithubProvider = ({ children }) => {
 
   const searchUsers = async (text) => {
     setLoading(true);
-
-    const params = new URLSearchParams({
-      q: text,
-    });
+    const params = new URLSearchParams(`q=${text}+type:user`);
 
     const githubUsersObject = {};
     const res = await fetch(`${GITHUB_URL}/search/users?${params}`);
@@ -177,7 +175,7 @@ export const GithubProvider = ({ children }) => {
     }
 
     if (action === "update") {
-      const updatedUserData = await getUsersContributionData(user);
+      const updatedUserData = await getUsersContributionData(username);
       if (!updatedUserData.userContributionData) return;
       updatedUserData.local_storage_save_time = Date.now();
 

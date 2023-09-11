@@ -27,7 +27,7 @@ function UserItem({ user }) {
   }, [watchlist, users]);
 
   return (
-    <div className="card shadow-md compact side bg-zinc-700 opacity-40 hover:opacity-100 w-96">
+    <div className="card rounded-md shadow-md compact side bg-zinc-700 opacity-40 hover:opacity-100 w-96 mx-auto">
       {updating && (
         <div className="absolute py-11 px-20 z-[100] w-full h-full text-xl bg-black/[0.6] text-white flex flex-row">
           Updating
@@ -36,7 +36,7 @@ function UserItem({ user }) {
       )}
       <div className="relative flex-row space-x-1 card-body">
         <div className="avatar">
-          <div className="rounded-full shadow w-20">
+          <div className="rounded-full shadow w-20 h-20">
             <img src={avatar_url} alt="Profile" />
           </div>
         </div>
