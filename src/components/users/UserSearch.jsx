@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useContext, useRef } from "react";
 import GithubContext from "../../context/github/GithubContext";
 import AlertContext from "../../context/alert/AlertContext";
 
@@ -7,19 +7,18 @@ function UserSearch() {
   const { users, searchUsers, clearUsers, watchlist } =
     useContext(GithubContext);
 
-  const [text, setText] = useState("");
+  const searchRef = useRef();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (text === "") {
+    if (searchRef.current.value === "") {
       setAlert("Try searching a GitHub account name", "error");
     } else {
       clearUsers();
-      const searchRes = await searchUsers(text);
+      const searchRes = await searchUsers(searchRef.current.value);
       if (!searchRes)
         setAlert("There were no results based on that search...", "error");
-      setText("");
+      searchRef.current.value = "";
     }
   };
 
@@ -33,8 +32,7 @@ function UserSearch() {
                 type="text"
                 className="w-full pr-40 bg-gray-200 input input-lg text-black"
                 placeholder="Search Github User"
-                value={text}
-                onChange={({ target: { value } }) => setText(value)}
+                ref={searchRef}
               />
               <button
                 type="submit"
