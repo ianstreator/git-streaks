@@ -33,11 +33,12 @@ export const GithubProvider = ({ children }) => {
     dispatch({ type: "SET_USERS", payload: { ...parsedWatchList } });
     for (let i = 0; i < localStorageWatchList.length; i++) {
       let userData = parsedWatchList[localStorageWatchList[i]];
-      const saveTime = new Date(userData.local_storage_save_time);
+      const saveTime = new Date(userData.saveTime);
       const currTime = new Date();
-      const notSameDay = saveTime.getUTCDate() !== currTime.getUTCDate();
-
-      if (notSameDay && typeof saveTime.getUTCDate() === "number") {
+      const notSameDay =
+        `${saveTime.getMonth() + 1} ${saveTime.getDate()}` !==
+        `${currTime.getMonth() + 1} ${currTime.getDate()}`;
+      if (notSameDay) {
         dispatch({
           type: "SET_USERS",
           payload: {
@@ -155,7 +156,7 @@ export const GithubProvider = ({ children }) => {
       const newWatchListUser = {
         [username]: {
           ...user,
-          local_storage_save_time: Date.now(),
+          saveTime: Date.now(),
           updating: false,
         },
       };
@@ -177,7 +178,7 @@ export const GithubProvider = ({ children }) => {
       const updatedUserData = await getUsersContributionData(username);
       if (!updatedUserData.userContributionData) return;
 
-      updatedUserData.local_storage_save_time = Date.now();
+      updatedUserData.saveTime = Date.now();
 
       state.watchlist[username] = updatedUserData;
 
@@ -192,7 +193,13 @@ export const GithubProvider = ({ children }) => {
       });
       dispatch({
         type: "SET_USERS",
-        payload: { ...state.watchlist },
+        payload: {
+          ...state.watchlist,
+          username: {
+            ...user,
+            updating: false,
+          },
+        },
       });
     }
   };
