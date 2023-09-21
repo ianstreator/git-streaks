@@ -1,16 +1,16 @@
-import { createContext, useEffect, useReducer, useState } from "react";
+import { createContext, useEffect, useReducer } from "react";
 import githubReducer from "./GithubReducer";
 
 const GithubContext = createContext();
 
 const GITHUB_URL = process.env.REACT_APP_GITHUB_URL;
-
-const watchListCookieKey = "watchlist";
-
 const isdev = window.location.href.includes("localhost");
 const ENV_API_URL = isdev
   ? process.env.REACT_APP_DEV_API_URL
   : process.env.REACT_APP_PROD_API_URL;
+const watchListCookieKey = "watchlist";
+
+const initWatchList = JSON.parse(localStorage.getItem(watchListCookieKey));
 
 export const GithubProvider = ({ children }) => {
   const initialState = {
@@ -22,38 +22,86 @@ export const GithubProvider = ({ children }) => {
   };
   const [state, dispatch] = useReducer(githubReducer, initialState);
 
+  // Initialize state
   useEffect(() => {
-    if (!localStorage.getItem(watchListCookieKey)) return;
-    const parsedWatchList = JSON.parse(
-      localStorage.getItem(watchListCookieKey)
-    );
-    const localStorageWatchList = Object.keys(parsedWatchList);
+    if (!initWatchList) return;
 
-    dispatch({ type: "SET_WATCHLIST", payload: { ...parsedWatchList } });
-    dispatch({ type: "SET_USERS", payload: { ...parsedWatchList } });
-    for (let i = 0; i < localStorageWatchList.length; i++) {
-      let userData = parsedWatchList[localStorageWatchList[i]];
-      const saveTime = new Date(userData.saveTime);
-      const currTime = new Date();
-      const notSameDay =
-        `${saveTime.getMonth() + 1} ${saveTime.getDate()}` !==
-        `${currTime.getMonth() + 1} ${currTime.getDate()}`;
-      if (notSameDay) {
-        dispatch({
-          type: "SET_USERS",
-          payload: {
-            ...parsedWatchList,
-            [localStorageWatchList[i]]: {
-              ...userData,
-              updating: true,
-            },
-          },
-        });
-        updateWatchlist({ user: userData, action: "update" });
-      }
-    }
+    updateWatchList();
   }, []);
 
+  // Initial functions
+  const updateWatchList = async () => {
+    for (const user of Object.values(initWatchList)) {
+      initWatchList[user.login] = { ...user, updating: true };
+    }
+
+    dispatch({ type: "SET_WATCHLIST", payload: { ...initWatchList } });
+    dispatch({
+      type: "SET_USERS",
+      payload: {
+        ...initWatchList,
+      },
+    });
+
+    const promises = Object.values(initWatchList).map(async (userData) => {
+      const saveTime = new Date(userData.saveTime);
+      const currTime = new Date();
+      const fourHours = 10;
+
+      if (currTime - saveTime > fourHours) {
+        try {
+          await updateWatchListUser(userData);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    });
+
+    await Promise.all(promises);
+  };
+
+  const updateWatchListUser = async (user) => {
+    const username = user.login;
+
+    let updatedWatchList = JSON.parse(localStorage.getItem(watchListCookieKey));
+
+    const data = await getUsersContributionData([username]);
+
+    const updatedUser = {
+      ...user,
+      saveTime: Date.now(),
+      userContributionData: { ...data[username] },
+      updating: false,
+    };
+
+    dispatch({
+      type: "SET_USERS",
+      payload: {
+        ...updatedWatchList,
+        [username]: { ...updatedUser },
+      },
+    });
+
+    dispatch({
+      type: "SET_WATCHLIST",
+      payload: {
+        ...updatedWatchList,
+        [username]: { ...updatedUser },
+      },
+    });
+
+    localStorage.setItem(
+      watchListCookieKey,
+      JSON.stringify(
+        updatedWatchList,
+        (updatedWatchList[username] = {
+          ...updatedUser,
+        })
+      )
+    );
+  };
+
+  // Application functions
   const searchUsers = async (text) => {
     setLoading(true);
     const params = new URLSearchParams(`q=${text}+type:user`);
@@ -142,65 +190,44 @@ export const GithubProvider = ({ children }) => {
     dispatch({ type: "SET_LOADING", payload: data });
   };
 
-  const updateWatchlist = async ({ user, action }) => {
+  const addToWatchList = (user) => {
     const username = user.login;
 
-    if (action === "delete") {
-      delete state.watchlist[username];
-      const localStorageWatchList = JSON.stringify({ ...state.watchlist });
-      localStorage.setItem(watchListCookieKey, localStorageWatchList);
-      dispatch({ type: "SET_WATCHLIST", payload: { ...state.watchlist } });
-    }
+    const updatedWatchList = {
+      ...state.watchlist,
+      [username]: { ...user, saveTime: Date.now(), updating: false },
+    };
 
-    if (action === "add") {
-      const newWatchListUser = {
-        [username]: {
-          ...user,
-          saveTime: Date.now(),
-          updating: false,
-        },
-      };
-      const setLocalStorageWatchList = {
-        ...state.watchlist,
-        ...newWatchListUser,
-      };
+    // Update App State
+    dispatch({
+      type: "SET_WATCHLIST",
+      payload: { ...updatedWatchList },
+    });
+
+    // Update localStorage
+    localStorage.setItem(
+      watchListCookieKey,
+      JSON.stringify({ ...updatedWatchList })
+    );
+  };
+
+  const removeFromWatchList = (user) => {
+    const username = user.login;
+
+    const watchListRef = { ...state.watchlist };
+    delete watchListRef[username];
+
+    // Update App State
+    dispatch({ type: "SET_WATCHLIST", payload: { ...watchListRef } });
+
+    // Update localStorage
+    if (!Object.keys(watchListRef).length) {
+      localStorage.removeItem(watchListCookieKey);
+    } else {
       localStorage.setItem(
         watchListCookieKey,
-        JSON.stringify({ ...setLocalStorageWatchList })
+        JSON.stringify({ ...watchListRef })
       );
-      dispatch({
-        type: "SET_WATCHLIST",
-        payload: { ...setLocalStorageWatchList },
-      });
-    }
-
-    if (action === "update") {
-      const updatedUserData = await getUsersContributionData(username);
-      if (!updatedUserData.userContributionData) return;
-
-      updatedUserData.saveTime = Date.now();
-
-      state.watchlist[username] = updatedUserData;
-
-      localStorage.setItem(watchListCookieKey, JSON.stringify(state.watchlist));
-      dispatch({
-        type: "SET_USER",
-        payload: { updating: false, userContributionData: updatedUserData },
-      });
-      dispatch({
-        type: "SET_WATCHLIST",
-        payload: { ...state.watchlist },
-      });
-      dispatch({
-        type: "SET_USERS",
-        payload: {
-          ...state.watchlist,
-          username: {
-            ...user,
-            updating: false,
-          },
-        },
-      });
     }
   };
 
@@ -212,7 +239,9 @@ export const GithubProvider = ({ children }) => {
         getUser,
         getUserRepos,
         clearUsers,
-        updateWatchlist,
+        addToWatchList,
+        removeFromWatchList,
+        updateWatchList,
       }}
     >
       {children}
