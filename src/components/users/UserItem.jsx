@@ -13,7 +13,9 @@ import { useEffect } from "react";
 import Loader from "../layout/Loader";
 
 function UserItem({ user }) {
-  const { updateWatchlist, watchlist, users } = useContext(GithubContext);
+  const { removeFromWatchList, addToWatchList, watchlist, users } =
+    useContext(GithubContext);
+
   const {
     login,
     avatar_url,
@@ -27,9 +29,9 @@ function UserItem({ user }) {
   }, [watchlist, users]);
 
   return (
-    <div className="card rounded-md shadow-md compact side bg-zinc-700 opacity-40 hover:opacity-100 w-96 mx-auto">
+    <div className="relative card rounded-md shadow-md compact side bg-zinc-700 opacity-40 hover:opacity-100 w-96 mx-auto">
       {updating && (
-        <div className="absolute py-11 px-20 z-[100] w-full h-full text-xl bg-black/[0.6] text-white flex flex-row">
+        <div className="absolute z-[100] w-full h-full text-xl bg-black/[0.6] text-white flex flex-row justify-center items-center">
           Updating
           <Loader />
         </div>
@@ -62,12 +64,9 @@ function UserItem({ user }) {
                 watchChange ? "remove from watch list" : "add to watch list"
               }
               className={`mx-1 ml-auto cursor-pointer`}
-              onClick={() => {
-                updateWatchlist({
-                  user,
-                  action: watchlist[login] ? "delete" : "add",
-                });
-              }}
+              onClick={() =>
+                watchlist[login] ? removeFromWatchList(user) : addToWatchList(user)
+              }
             />
           </div>
           <div className="flex justify-between bg-zinc-800 rounded bg-opacity-60 w-full">
