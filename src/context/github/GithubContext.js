@@ -31,10 +31,6 @@ export const GithubProvider = ({ children }) => {
 
   // Initial functions
   const updateWatchList = async () => {
-    for (const user of Object.values(initWatchList)) {
-      initWatchList[user.login] = { ...user, updating: true };
-    }
-
     dispatch({ type: "SET_WATCHLIST", payload: { ...initWatchList } });
     dispatch({
       type: "SET_USERS",
@@ -46,10 +42,20 @@ export const GithubProvider = ({ children }) => {
     const promises = Object.values(initWatchList).map(async (userData) => {
       const saveTime = new Date(userData.saveTime);
       const currTime = new Date();
-      const fourHours = 60*60*4;
+      const seconds = 1000;
+      const minutes = 60 * seconds;
+      const hours = 60 * minutes;
 
-      if (currTime - saveTime > fourHours) {
+      if (currTime - saveTime > 2 * hours) {
         try {
+          initWatchList[userData.login] = { ...userData, updating: true };
+          dispatch({
+            type: "SET_USERS",
+            payload: {
+              ...initWatchList,
+            },
+          });
+
           await updateWatchListUser(userData);
         } catch (error) {
           console.log(error);
@@ -57,7 +63,7 @@ export const GithubProvider = ({ children }) => {
       }
     });
 
-    await Promise.all(promises);
+    await Promise.allSettled(promises);
   };
 
   const updateWatchListUser = async (user) => {
