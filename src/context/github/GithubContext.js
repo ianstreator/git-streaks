@@ -46,7 +46,7 @@ export const GithubProvider = ({ children }) => {
     const promises = Object.values(initWatchList).map(async (userData) => {
       const saveTime = new Date(userData.saveTime);
       const currTime = new Date();
-      const fourHours = 10;
+      const fourHours = 60*60*4;
 
       if (currTime - saveTime > fourHours) {
         try {
