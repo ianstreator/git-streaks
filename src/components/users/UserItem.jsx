@@ -91,7 +91,7 @@ function UserItem({ user }) {
             </div>
             <div
               className="bg-zinc-800 pr-2 p-1 m-1 flex rounded"
-              title="yearly contributions"
+              title="year to date contributions"
             >
               <img
                 src={yearly}
