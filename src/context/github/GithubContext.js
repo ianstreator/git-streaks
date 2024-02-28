@@ -8,9 +8,11 @@ const isdev = window.location.href.includes("localhost");
 const ENV_API_URL = isdev
   ? process.env.REACT_APP_DEV_API_URL
   : process.env.REACT_APP_PROD_API_URL;
-const watchListCookieKey = "watchlist";
+const LOCAL_STORAGE_KEY = "watchlist";
 
-const initWatchList = JSON.parse(localStorage.getItem(watchListCookieKey));
+const localStorageWatchList = JSON.parse(
+  localStorage.getItem(LOCAL_STORAGE_KEY)
+);
 
 export const GithubProvider = ({ children }) => {
   const initialState = {
@@ -22,46 +24,47 @@ export const GithubProvider = ({ children }) => {
   };
   const [state, dispatch] = useReducer(githubReducer, initialState);
 
-  // Initialize state
   useEffect(() => {
-    if (!initWatchList) return;
-
-    updateWatchList();
-  }, []);
-
-  // Initial functions
-  const updateWatchList = async () => {
-    dispatch({ type: "SET_WATCHLIST", payload: { ...initWatchList } });
+    if (!localStorageWatchList) return;
+    dispatch({ type: "SET_WATCHLIST", payload: { ...localStorageWatchList } });
     dispatch({
       type: "SET_USERS",
       payload: {
-        ...initWatchList,
+        ...localStorageWatchList,
       },
     });
+    updateWatchList();
+  }, []);
 
-    const promises = Object.values(initWatchList).map(async (userData) => {
-      const saveTime = new Date(userData.saveTime);
-      const currTime = new Date();
-      const seconds = 1000;
-      const minutes = 60 * seconds;
-      const hours = 60 * minutes;
+  const updateWatchList = async () => {
+    const promises = Object.values(localStorageWatchList).map(
+      async (userData) => {
+        const saveTime = new Date(userData.saveTime);
+        const currTime = new Date();
+        const seconds = 1000;
+        const minutes = 60 * seconds;
+        const hours = 60 * minutes;
 
-      if (currTime - saveTime > 2 * hours) {
-        try {
-          initWatchList[userData.login] = { ...userData, updating: true };
-          dispatch({
-            type: "SET_USERS",
-            payload: {
-              ...initWatchList,
-            },
-          });
+        if (currTime - saveTime > 2 * hours) {
+          try {
+            localStorageWatchList[userData.login] = {
+              ...userData,
+              updating: true,
+            };
+            dispatch({
+              type: "SET_USERS",
+              payload: {
+                ...localStorageWatchList,
+              },
+            });
 
-          await updateWatchListUser(userData);
-        } catch (error) {
-          console.log(error);
+            await updateWatchListUser(userData);
+          } catch (error) {
+            console.log(error);
+          }
         }
       }
-    });
+    );
 
     await Promise.allSettled(promises);
   };
@@ -69,7 +72,7 @@ export const GithubProvider = ({ children }) => {
   const updateWatchListUser = async (user) => {
     const username = user.login;
 
-    let updatedWatchList = JSON.parse(localStorage.getItem(watchListCookieKey));
+    let updatedWatchList = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
 
     const data = await getUsersContributionData([username]);
 
@@ -97,7 +100,7 @@ export const GithubProvider = ({ children }) => {
     });
 
     localStorage.setItem(
-      watchListCookieKey,
+      LOCAL_STORAGE_KEY,
       JSON.stringify(
         updatedWatchList,
         (updatedWatchList[username] = {
@@ -107,7 +110,6 @@ export const GithubProvider = ({ children }) => {
     );
   };
 
-  // Application functions
   const searchUsers = async (text) => {
     setLoading(true);
     const params = new URLSearchParams(`q=${text}+type:user`);
@@ -154,8 +156,9 @@ export const GithubProvider = ({ children }) => {
       body: JSON.stringify(users),
     };
     const res = await fetch(`${ENV_API_URL}/api/index`, options);
+    console.log(res)
     const data = await res.json();
-
+    console.log(data)
     if (res.status === 200) {
       return data;
     } else {
@@ -204,15 +207,13 @@ export const GithubProvider = ({ children }) => {
       [username]: { ...user, saveTime: Date.now(), updating: false },
     };
 
-    // Update App State
     dispatch({
       type: "SET_WATCHLIST",
       payload: { ...updatedWatchList },
     });
 
-    // Update localStorage
     localStorage.setItem(
-      watchListCookieKey,
+      LOCAL_STORAGE_KEY,
       JSON.stringify({ ...updatedWatchList })
     );
   };
@@ -223,15 +224,13 @@ export const GithubProvider = ({ children }) => {
     const watchListRef = { ...state.watchlist };
     delete watchListRef[username];
 
-    // Update App State
     dispatch({ type: "SET_WATCHLIST", payload: { ...watchListRef } });
 
-    // Update localStorage
     if (!Object.keys(watchListRef).length) {
-      localStorage.removeItem(watchListCookieKey);
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
     } else {
       localStorage.setItem(
-        watchListCookieKey,
+        LOCAL_STORAGE_KEY,
         JSON.stringify({ ...watchListRef })
       );
     }
